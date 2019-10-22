@@ -49,12 +49,24 @@ go get -u github.com/gorilla/mux
 Let's start registering a couple of URL paths and handlers:
 
 ```go
+package main
+
+import (
+	"net/http"
+
+	"github.com/gorilla/mux"
+)
+
 func main() {
-    r := mux.NewRouter()
-    r.HandleFunc("/", HomeHandler)
-    r.HandleFunc("/products", ProductsHandler)
-    r.HandleFunc("/articles", ArticlesHandler)
-    http.Handle("/", r)
+	var HomeHandler = func(res http.ResponseWriter, req *http.Request) {}
+	var ProductsHandler = func(res http.ResponseWriter, req *http.Request) {}
+	var ArticlesHandler = func(res http.ResponseWriter, req *http.Request) {}
+
+	r := mux.NewRouter()
+	r.HandleFunc("/", HomeHandler)
+	r.HandleFunc("/products", ProductsHandler)
+	r.HandleFunc("/articles", ArticlesHandler)
+	http.Handle("/", r)
 }
 ```
 
@@ -63,19 +75,54 @@ Here we register three routes mapping URL paths to handlers. This is equivalent 
 Paths can have variables. They are defined using the format `{name}` or `{name:pattern}`. If a regular expression pattern is not defined, the matched variable will be anything until the next slash. For example:
 
 ```go
-r := mux.NewRouter()
-r.HandleFunc("/products/{key}", ProductHandler)
-r.HandleFunc("/articles/{category}/", ArticlesCategoryHandler)
-r.HandleFunc("/articles/{category}/{id:[0-9]+}", ArticleHandler)
+package main
+
+import (
+	"net/http"
+
+	"github.com/gorilla/mux"
+)
+
+func main() {
+	var ProductHandler = func(res http.ResponseWriter, req *http.Request) {}
+	var ArticlesCategoryHandler = func(res http.ResponseWriter, req *http.Request) {}
+	var ArticleHandler = func(res http.ResponseWriter, req *http.Request) {}
+
+	r := mux.NewRouter()
+	r.HandleFunc("/products/{key}", ProductHandler)
+	r.HandleFunc("/articles/{category}/", ArticlesCategoryHandler)
+	r.HandleFunc("/articles/{category}/{id:[0-9]+}", ArticleHandler)
+	http.Handle("/", r)
+}
 ```
 
 The names are used to create a map of route variables which can be retrieved calling `mux.Vars()`:
 
 ```go
+package main
+
+import (
+	"fmt"
+	"net/http"
+
+	"github.com/gorilla/mux"
+)
+
 func ArticlesCategoryHandler(w http.ResponseWriter, r *http.Request) {
-    vars := mux.Vars(r)
-    w.WriteHeader(http.StatusOK)
-    fmt.Fprintf(w, "Category: %v\n", vars["category"])
+	vars := mux.Vars(r)
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, "Category: %v\n", vars["category"])
+}
+
+func main() {
+	var ProductHandler = func(res http.ResponseWriter, req *http.Request) {}
+	var ArticleHandler = func(res http.ResponseWriter, req *http.Request) {}
+
+	r := mux.NewRouter()
+	r.HandleFunc("/products/{key}", ProductHandler)
+	r.HandleFunc("/articles/{category}/", ArticlesCategoryHandler)
+	r.HandleFunc("/articles/{category}/{id:[0-9]+}", ArticleHandler)
+	http.Handle("/", r)
 }
 ```
 
